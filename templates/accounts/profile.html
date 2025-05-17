@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        {# Kullanıcı Profil Resmi #}
+        {% if user.profile.profile_picture %}
+          <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="img-fluid rounded-circle">
+        {% else %}
+          <img src="{% static 'images/placeholder.png' %}" alt="Placeholder Profile Picture" class="img-fluid rounded-circle">
+        {% endif %}
+      </div>
+      <div class="col-md-8">
+        {# Kullanıcı Bilgileri #}
+        <h2>{{ user.username }}</h2>
+        <p>Posts: {{ post_count }}</p>
+        <p>Followers: {{ follower_count }}</p>
+        <p>Following: {{ following_count }}</p>
+      </div>
+    </div>
+    <div class="row mt-4">
+      {# Boş Alan (İleride Doldurulacak) #}
+      <div class="col-md-12">
+        {# Gelecekteki içerik buraya gelecek #}
+      </div>
+    </div>
+  </div>
+{% endblock %}

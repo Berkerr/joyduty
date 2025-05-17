@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Conversation with {% for participant in conversation.participants.all %}{% if participant != request.user %}{{ participant.username }}{% endif %}{% endfor %}{% endblock %}
+
+{% block content %}
+<h2>Conversation with {% for participant in conversation.participants.all %}{% if participant != request.user %}{{ participant.username }}{% endif %}{% endfor %}</h2>
+
+<div id="message-list">
+    {% for message in messages %}
+        <div class="message {% if message.sender == request.user %}sent{% else %}received{% endif %}">
+            <strong>{{ message.sender.username }}:</strong> {{ message.content }}
+            <small>{{ message.timestamp|date:"H:i" }}</small>
+        </div>
+    {% empty %}
+        <p>No messages yet.</p>
+    {% endfor %}
+</div>
+
+<div id="message-form">
+    <form method="post">
+        {% csrf_token %}
+        <textarea name="content" placeholder="Type your message here..."></textarea>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+{% comment %} Add CSS for message styling later {% endcomment %}
+
+{% endblock %}

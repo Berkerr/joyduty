@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+
+{% load static %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'equipment/css/jstree.min.css' %}">
+    <script src="{% static 'equipment/js/jstree.min.js' %}"></script>
+    <script>
+        (function($) {
+            $(function() {
+                $('.mptt-widget').each(function() {
+                    var name = $(this).attr('id').replace('_tree', '');
+                    var hiddenInput = $('<input type="hidden" name="' + name + '" value="">');
+                    $(this).after(hiddenInput);
+
+                    $(this).jstree().on('changed.jstree', function (e, data) {
+                        var selected_id = data.selected[0];
+                        hiddenInput.val(selected_id);
+                    });
+                });
+            });
+        })(django.jQuery);
+    </script>
+{% endblock %}

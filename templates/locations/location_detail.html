@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ location.name }} - JoyDuty{% endblock %}
+
+{% block content %}
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        <h1>{{ location.name }}</h1>
+        <p><strong>{% trans "Description" %}:</strong> {{ location.description }}</p>
+
+        <h2>{% trans "Amenities" %}</h2>
+        <div class="amenities-box">
+          <ul>
+            {% for amenity in location.amenities.all %}
+              <li>{{ amenity.name }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <div id="map" style="height: 400px;" data-latitude="{{ location.latitude|floatformat }}" data-longitude="{{ location.longitude|floatformat }}"></div>
+        <a href="https://www.google.com/maps/dir/?api=1&destination={{ location.latitude|floatformat }},{{ location.longitude|floatformat }}" class="btn btn-primary" target="_blank">{% trans "Get Directions" %}</a>
+
+        <h2>{% trans "Reviews" %}</h2>
+        {% for review in location.reviews.all %}
+          <div class="review">
+            <p><strong>{{ review.user.username }}</strong> - {{ review.created_at }}</p>
+            <p>{{ review.text }}</p>
+            {% if review.rating %}
+              <p>{% trans "Rating" %}: {{ review.rating }}/5</p>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <h3>{% trans "Add a Review" %}</h3>
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'locations:location_review_create' pk=location.pk %}">
+            {% csrf_token %}
+            {{ review_form|crispy }}
+            <button type="submit" class="btn btn-primary">{% trans "Submit Review" %}</button>
+          </form>
+        {% else %}
+          <p>{% trans "You must be logged in to add a review." %}</p>
+        {% endif %}
+      </div>
+      <div class="col-md-4">
+        <div class="location-info">
+          <h3>{% trans "Location Information" %}</h3>
+          <table class="table table-borderless">
+            <tbody>
+              <tr>
+                <td><i class="fas fa-list"></i> {% trans "Category" %}</td>
+                <td>{{ location.category }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-map-marker"></i> <strong>{% trans "Latitude" %}</td>
+                <td>{{ location.latitude }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-map-marker"></i> <strong>{% trans "Longitude" %}</td>
+                <td>{{ location.longitude }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-map"></i> <strong>{% trans "Address" %}</td>
+                <td>{{ location.address }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-user"></i> <strong>{% trans "Suggested By" %}</td>
+                <td>{{ location.suggested_by }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-calendar-alt"></i> <strong>{% trans "Created At" %}</td>
+                <td>{{ location.created_at }}</td>
+              </tr>
+              <tr>
+                <td><i class="fas fa-calendar-alt"></i> <strong>{% trans "Updated At" %}</td>
+                <td>{{ location.updated_at }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script>
+    var mapElement = document.getElementById('map');
+    var latitude = mapElement.dataset.latitude;
+    var longitude = mapElement.dataset.longitude;
+
+    var map = L.map('map').setView([latitude, longitude], 13);
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    L.marker([latitude, longitude]).addTo(map)
+      .bindPopup("{{ location.name|safe }}")
+      .openPopup();
+  </script>
+{% endblock %}

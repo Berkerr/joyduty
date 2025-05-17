@@ -1,0 +1,136 @@
+{# templates/locations/location_list.html #}
+
+{% extends "base.html" %}
+{% load static i18n %} {# json_script etiketini ekleyebiliriz #}
+
+{% block title %}
+  {% if category %}{{ category.name }}{% else %}{% trans "All Locations" %}{% endif %} - {% trans "Locations" %} - {{ block.super }}
+{% endblock title %}
+
+{% block extra_css %} {# Harita için ekstra CSS gerekebilir #}
+  <style>
+    #map { height: 500px; /* Haritanın yüksekliğini ayarla */ }
+  </style>
+{% endblock extra_css %}
+
+
+{% block content %}
+  <div class="row">
+    {# Sol Kenar Çubuğu - Kategoriler #}
+    <div class="col-md-3 mb-4 mb-md-0">
+      <h3>{% trans "Categories" %}</h3>
+      <div class="list-group">
+        <a href="{% url 'locations:list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+          {% trans "All Locations" %}
+        </a>
+        {% for cat in categories %}
+          <a href="{{ cat.get_absolute_url }}" class="list-group-item list-group-item-action {% if category and category.slug == cat.slug %}active{% endif %}">
+            {{ cat.name }}
+          </a>
+        {% empty %}
+          <p class="list-group-item">{% trans "No categories found." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Sağ İçerik Alanı - Harita ve Liste #}
+    <div class="col-md-9">
+      <h1>
+        {% if category %}{{ category.name }}{% else %}{% trans "All Locations" %}{% endif %}
+      </h1>
+      <hr>
+
+      {# Harita Alanı #}
+      <div id="map" class="mb-4 shadow-sm rounded"></div>
+
+      {# Lokasyon Listesi (Opsiyonel, harita ana odak olabilir) #}
+      <h3 class="mt-5">{% trans "List View" %}</h3>
+       {% if locations %}
+         <div class="list-group">
+           {% for loc in locations %}
+             <a href="{{ loc.get_absolute_url }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+               <div>
+                   <h6 class="mb-1">{{ loc.name }}</h6>
+                   <small class="text-muted">{{ loc.category.name|default:"N/A" }} {% if loc.address %} - {{ loc.address|truncatechars:50 }}{% endif %}</small>
+               </div>
+               <span class="badge bg-primary rounded-pill"><i class="fas fa-map-marker-alt"></i></span> {# İkon eklenebilir #}
+             </a>
+           {% endfor %}
+         </div>
+       {% else %}
+         <div class="alert alert-info" role="alert">
+             {% trans "No locations found matching your criteria." %}
+         </div>
+       {% endif %}
+    </div>
+  </div>
+
+  {# GeoJSON verisini JavaScript'e güvenli bir şekilde aktarma #}
+  {{ locations_geojson|json_script:"locations-data" }}
+
+{% endblock content %}
+
+
+{% block extra_js %}
+{#
+  {# Haritayı başlatan JavaScript kodu #}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 1. Harita konteynerini seç
+      const mapElement = document.getElementById('map');
+      if (!mapElement) return; // Harita elementi yoksa çık
+
+      // 2. Başlangıç koordinatları ve zoom seviyesi (Türkiye merkezi gibi)
+      const initialCoords = [39.0, 35.0]; // Enlem, Boylam
+      const initialZoom = 6;
+
+      // 3. Leaflet haritasını oluştur
+      const map = L.map(mapElement).setView(initialCoords, initialZoom);
+
+      // 4. Harita katmanını ekle (OpenStreetMap)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(map);
+
+      // 5. GeoJSON verisini şablondan al
+      const locationsDataElement = document.getElementById('locations-data');
+      if (!locationsDataElement) return; // Veri script'i yoksa çık
+
+      try {
+        const locationsGeoJson = JSON.parse(locationsDataElement.textContent);
+
+        // 6. GeoJSON verisini haritaya marker olarak ekle
+        L.geoJSON(locationsGeoJson, {
+          pointToLayer: function (feature, latlng) {
+            // Her nokta için özel bir marker oluştur (opsiyonel)
+            // const customIcon = L.icon({ ... });
+            return L.marker(latlng); // Varsayılan marker
+          },
+          onEachFeature: function (feature, layer) {
+            // Her marker'a tıklandığında açılacak popup içeriğini ayarla
+            if (feature.properties) {
+              let popupContent = `<h6><a href="${feature.properties.url || '#'}">${feature.properties.name || 'N/A'}</a></h6>`;
+              if (feature.properties.category) {
+                popupContent += `<p class="mb-0 small text-muted">${feature.properties.category}</p>`;
+              }
+              layer.bindPopup(popupContent);
+            }
+          }
+        }).addTo(map);
+
+         // 7. Eğer lokasyon verisi varsa haritayı bu lokasyonları içerecek şekilde ayarla (opsiyonel)
+         if (locationsGeoJson.features.length > 0) {
+            const geoJsonLayerForBounds = L.geoJSON(locationsGeoJson);
+            map.fitBounds(geoJsonLayerForBounds.getBounds().pad(0.1)); // %10 padding ile sığdır
+         }
+
+
+      } catch (e) {
+        console.error("Error parsing locations GeoJSON data:", e);
+      }
+
+    });
+  </script>
+#}
+{% endblock extra_js %}

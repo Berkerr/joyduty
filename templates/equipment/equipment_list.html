@@ -1,0 +1,112 @@
+{# templates/equipment/equipment_list.html #}
+
+{% extends "base.html" %}
+{% load i18n static mptt_tags %} {# mptt_tags eklendi #}
+
+{% block title %}
+  {% if category %}{{ category.name }}{% else %}{% trans "All Equipment" %}{% endif %} - {% trans "Equipment" %} - {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    {# Sol Kenar Çubuğu - Kategoriler #}
+    <div class="col-md-3 mb-4 mb-md-0"> {# Mobil için alt boşluk eklendi #}
+      <h3>{% trans "Categories" %}</h3>
+      <div class="list-group">
+        <a href="{% url 'equipment:list' %}" class="list-group-item list-group-item-action {% if not category %}active{% endif %}">
+          {% trans "All Equipment" %}
+        </a>
+        {# MPTT recursetree tag'i ile hiyerarşik liste #}
+        {% recursetree categories %}
+            <a href="{{ node.get_absolute_url }}"
+               class="list-group-item list-group-item-action {% if category and category.pk == node.pk %}active{% endif %}">
+                {{ node.name }}
+            </a>
+            {# Alt kategoriler varsa, recursetree otomatik olarak çağrılır #}
+            {% if not node.is_leaf_node %}
+                {# Alt kategoriler için ek bir şey yapmaya gerek yok, recursetree halleder #}
+                {{ children }}
+            {% endif %}
+        {% endrecursetree %}
+      </div>
+
+      <h3>{% trans "Brands" %}</h3>
+      <div class="list-group">
+        <a href="{% url 'equipment:list' %}" class="list-group-item list-group-item-action {% if not brand %}active{% endif %}">
+          {% trans "All Brands" %}
+        </a>
+        {% for brand_name, brand_slug in brands_with_equipment %}
+          <a href="{% url 'equipment:list' brand_slug=brand_slug %}" class="list-group-item list-group-item-action {% if brand and brand.slug == brand_slug %}active{% endif %}">
+            {{ brand_name }}
+          </a>
+        {% empty %}
+          <p class="list-group-item">{% trans "No brands found." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Sağ İçerik Alanı - Ekipman Listesi #}
+    <div class="col-md-9">
+      <h1>
+        {% if category %}{{ category.name }}{% else %}{% trans "All Equipment" %}{% endif %}
+      </h1>
+      <hr>
+
+      {% if equipment_data %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+          {% for data in equipment_data %}
+            {% with item=data.equipment %}
+            <div class="col">
+              <div class="card h-100 shadow-sm"> {# Gölge efekti eklendi #}
+                <div class="image-container">  {# New div with a fixed aspect ratio #}
+                  {% if item.image %}
+                    {# Ekipman resmi linki item.get_absolute_url ile #}
+                    <a href="{{ item.get_absolute_url }}">
+                      <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                    </a>
+                  {% else %}
+                   {# Placeholder resim linki item.get_absolute_url ile #}
+                   <a href="{{ item.get_absolute_url }}">
+                     {# static/images/placeholder.png dosyasının var olduğundan emin olun #}
+                     <img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="{% trans 'No image available' %}">
+                   </a>
+                  {% endif %}
+                </div>
+                <div class="card-body d-flex flex-column"> {# İçeriği dikeyde esnetmek için #}
+                  <h5 class="card-title">
+                      {# Ekipman başlık linki item.get_absolute_url ile #}
+                      <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark">{{ item.name }}</a> {# item.__str__() kullanılır #}
+                  </h5>
+                  <div class="card-subtitle text-muted small mb-1">
+                      {% if item.category %}<div class="category">{{ item.category.name }}</div>{% endif %}
+                      {% if item.brand %}<div class="brand">{{ item.brand.name }}</div>{% endif %}
+                  </div>
+                  <div class="card-text text-muted small mb-2">
+                      {% if data.review_count > 0 %}
+                          Reviews: {% if data.review_count > 999 %}999+{% else %}{{ data.review_count }}{% endif %}
+                          | Rating: {{ data.average_rating|floatformat:2 }}
+                      {% else %}
+                          No reviews yet
+                      {% endif %}
+                  </div>
+                  <p class="card-text small text-muted flex-grow-1">{{ item.description|truncatewords:15 }}</p>
+                </div>
+                <div class="card-footer text-center bg-light border-top-0"> {# Arkaplan ve kenarlık ayarı #}
+                   {# Detay butonu linki item.get_absolute_url ile #}
+                   <a href="{{ item.get_absolute_url }}" class="btn btn-sm btn-outline-primary w-100">{% trans "View Details" %}</a> {# Tam genişlik butonu #}
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+         {# İleride Sayfalama (Pagination) eklenebilir #}
+         {# Örnek: {% include "partials/_pagination.html" with page_obj=equipments %} #}
+      {% else %}
+        <div class="alert alert-info" role="alert">
+            {% trans "No equipment found matching your criteria." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}

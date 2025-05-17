@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Map" %} - {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <h1>{% trans "Map" %}</h1>
+  <div class="map-container" style="width: 100%; height: 600px;"> {# Adjust height as needed #}
+    <iframe src="https://www.google.com/maps/d/embed?mid=1nM--zGcejL-L_ph3KmDYX6gj6A6v4KU&ehbc=2E312F" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  </div>
+{% endblock %}

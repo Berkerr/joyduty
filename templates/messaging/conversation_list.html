@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Conversations{% endblock %}
+
+{% block content %}
+<h2>Your Conversations</h2>
+
+{% if conversations %}
+    <ul>
+        {% for conversation in conversations %}
+            <li>
+                <a href="{{ conversation.get_absolute_url }}">
+                    Conversation with {% for participant in conversation.participants.all %}{% if participant != request.user %}{{ participant.username }}{% endif %}{% endfor %}
+                </a>
+                {% comment %} Display last message or unread count here later {% endcomment %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>You have no conversations yet.</p>
+{% endif %}
+
+{% endblock %}

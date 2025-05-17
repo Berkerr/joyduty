@@ -1,0 +1,110 @@
+/* Custom CSS */
+body {
+  font-family: sans-serif;
+}
+
+.container {
+}
+
+h1, h2, h3 {
+  color: #333;
+}
+
+.btn-primary {
+  background-color: #556B2F; /* Outdoor green tone */
+  border-color: #556B2F;
+  color: #FFFFFF; /* Ensure text is white */
+}
+
+.btn-primary:hover {
+  background-color: #445725; /* Darker green for hover */
+  border-color: #445725;
+  color: #FFFFFF;
+}
+
+.btn-outline-secondary {
+  color: #333;
+  border-color: #333;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #556B2F; /* Outdoor green tone for hover */
+  border-color: #556B2F;
+  color: #FFFFFF; /* White text on hover */
+}
+
+
+.navbar-nav .nav-link {
+  font-size: 0.8rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.amenities-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+.location-info {
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 5px;
+}
+
+.location-info h3 {
+  margin-top: 0;
+}
+
+.location-info p {
+  margin-bottom: 0.5rem;
+}
+
+.location-info i {
+  margin-right: 0.5rem;
+}
+
+.table-borderless td {
+  border: none;
+}
+
+.navbar.navbar-expand-lg {
+  background-color: #556B2F !important; /* Outdoor green tone */
+}
+
+.navbar-nav .nav-link {
+  color: #FFFFFF !important; /* White text color */
+}
+
+.navbar-nav .nav-item .active {
+  background-color: #556B2F !important; /* Outdoor green tone for active link */
+}
+
+/* Adjust icon size in navbar */
+.navbar .navbar-brand i,
+.navbar .nav-link i {
+  font-size: 1.5rem; /* Ensure all icons in navbar have consistent size */
+}
+
+/* Style for JoyDuty logo text */
+.navbar .navbar-brand {
+  font-family: 'Nunito', sans-serif; /* Apply Nunito font */
+  text-transform: lowercase; /* Make text lowercase */
+  font-size: 1.8rem; /* Increase font size */
+  font-weight: bold; /* Make text bold */
+}
+
+.card-subtitle {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.card .card-img-top {
+  max-height: 200px !important; /* Set a maximum height */
+  width: 100% !important;
+  object-fit: contain !important; /* Use contain to show the entire image */
+}
+
+.card {
+    min-height: 450px; /* Set a minimum height for the card */
+}

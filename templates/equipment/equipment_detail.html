@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load i18n static contenttypes %}
+
+{% block title %}{{ equipment }} - {% trans "Equipment" %} - {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    {# Ekipman Resmi #}
+    <div class="col-md-6 mb-4">
+      {% if equipment.image %}
+        <img src="{{ equipment.image.url }}" class="img-fluid rounded" alt="{{ equipment.name }}">
+      {% else %}
+        <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded" alt="{% trans 'No image available' %}" style="background-color: #eee;">
+      {% endif %}
+    </div>
+
+    {# Ekipman Bilgileri #}
+    <div class="col-md-6">
+      <h1>{{ equipment.name }}</h1>
+      {% if equipment.brand %}
+        <h5 class="text-muted mb-3">
+            {% trans "Brand" %}:
+            <a href="#">{{ equipment.brand.name }}</a> {# Marka sayfasına link (ileride) #}
+            {% if equipment.model_no %} ({{ equipment.model_no }}){% endif %}
+        </h5>
+      {% elif equipment.model_no %}
+         <h5 class="text-muted mb-3">{% trans "Model" %}: {{ equipment.model_no }}</h5>
+      {% endif %}
+
+      {% if equipment.category %}
+        <p>
+          <strong>{% trans "Category" %}:</strong>
+          <a href="{{ equipment.category.get_absolute_url }}">{{ equipment.category.name }}</a>
+        </p>
+      {% endif %}
+
+      {% if equipment.description %}
+        <h4>{% trans "Description" %}</h4>
+        <p>{{ equipment.description|linebreaksbr }}</p> {# Satır sonlarını <br> yapar #}
+      {% endif %}
+
+      {# İleride teknik özellikler, fiyat vb. eklenebilir #}
+
+      {# --- Caravan Models Tabs --- #}
+      <hr class="my-4">
+      <h3>{% trans "Used In Caravan Models" %}</h3>
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="standard-tab" data-bs-toggle="tab" data-bs-target="#standard-tab-pane" type="button" role="tab" aria-controls="standard-tab-pane" aria-selected="true">{% trans "Standard Equipment" %}</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="optional-tab" data-bs-toggle="tab" data-bs-target="#optional-tab-pane" type="button" role="tab" aria-controls="optional-tab-pane" aria-selected="false">{% trans "Optional Equipment" %}</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="user-reported-tab" data-bs-toggle="tab" data-bs-target="#user-reported-tab-pane" type="button" role="tab" aria-controls="user-reported-tab-pane" aria-selected="false">{% trans "User-Reported Usage" %}</button>
+        </li>
+      </ul>
+      <div class="tab-content" id="myTabContent">
+        {# Standard Equipment Tab #}
+        <div class="tab-pane fade show active" id="standard-tab-pane" role="tabpanel" aria-labelledby="standard-tab" tabindex="0">
+          <p>Number of standard caravans: {{ standard_caravans|length }}</p>
+          {% if standard_caravans %}
+            <ul>
+              {% for caravan in standard_caravans %}
+                <li><a href="{{ caravan.get_absolute_url }}">{{ caravan.model_name }}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>{% trans "No standard equipment found in any caravan models." %}</p>
+          {% endif %}
+        </div>
+
+        {# Optional Equipment Tab #}
+        <div class="tab-pane fade" id="optional-tab-pane" role="tabpanel" aria-labelledby="optional-tab" tabindex="0">
+          <p>Number of optional caravans: {{ optional_caravans|length }}</p>
+          {% if optional_caravans %}
+            <ul>
+              {% for caravan in optional_caravans %}
+                <li>{{ caravan }} - <a href="{{ caravan.get_absolute_url }}">{{ caravan.model_name }}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p>{% trans "No optional equipment found in any caravan models." %}</p>
+          {% endif %}
+        </div>
+
+        {# User-Reported Usage Tab (Placeholder) #}
+        <div class="tab-pane fade" id="user-reported-tab-pane" role="tabpanel" aria-labelledby="user-reported-tab" tabindex="0">
+          <p>{% trans "This section is a placeholder for user-reported equipment usage. Functionality will be added later." %}</p>
+        </div>
+      </div>
+
+  {# --- Yorumlar Bölümü --- #}
+  <hr class="my-4">
+<h3>{% trans "Reviews" %} ({{ reviews.count }}) - {% trans "Average Rating" %}:{% if average_rating is not None %}{% for i in "12345"|make_list %}{% if i|add:"0" <= average_rating|floatformat:"0"|add:"0" %}<i class="fas fa-star text-warning"></i>{% else %}<i class="far fa-star text-warning"></i>{% endif %}{% endfor %}({{ average_rating|floatformat:"2" }}/5){% else %}N/A{% endif %}</h3> {# Yorum sayısını göster #}
+  <div id="reviews-section">
+      {% if reviews %}
+          {% for review in reviews %}
+              <div class="card mb-3 shadow-sm">
+                   <div class="card-body">
+                      <h6 class="card-subtitle mb-2 text-muted">
+                          <i class="fas fa-user me-1"></i> {{ review.user.username }}
+                          <small class="ms-2">- {{ review.created_at|date:"d M Y, H:i" }}</small>
+                      </h6>
+                      {% if review.rating %}
+                          <p class="mb-1">
+                              {% trans "Rating" %}:
+                              {% for i in "12345"|make_list %}
+                                  {% if i|add:"0" <= review.rating %}
+                                      <i class="fas fa-star text-warning"></i>
+                                  {% else %}
+                                      <i class="far fa-star text-warning"></i>
+                                  {% endif %}
+                              {% endfor %}
+                              ({{ review.rating }}/5)
+                          </p>
+                      {% endif %}
+                      <p class="card-text">{{ review.text|linebreaksbr }}</p>
+                  </div>
+              </div>
+          {% endfor %}
+      {% else %}
+          <p><em>{% trans "Be the first to review this equipment!" %}</em></p> {# Mesajı ekipmana göre uyarla #}
+      {% endif %}
+
+      {# --- Yorum Ekleme Formu --- #}
+      <hr>
+      <h4>{% trans "Add Your Review" %}</h4>
+      {% if user.is_authenticated %}
+       {# --- BU SATIRI KONTROL EDİN --- #}
+       {% get_content_type equipment as equipment_content_type %}
+
+       <form action="{% url 'reviews:add_review' content_type_id=equipment_content_type.id object_id=equipment.pk %}" method="post">
+           {% csrf_token %}
+           {{ review_form.as_p }}
+           <button type="submit" class="btn btn-primary mt-2">{% trans "Submit Review" %}</button>
+       </form>
+
+      {% else %} {# Giriş yapmamışsa mesaj göster #}
+          <p><em>{% trans "You must be" %} <a href="{% url 'login' %}?next={{ request.path }}">{% trans "logged in" %}</a> {% trans "to add a review." %}</em></p>
+      {% endif %}
+  </div> {# reviews-section kapanışı #}
+
+    </div>
+  </div>
+
+  {# --- Benzer Ekipmanlar (Opsiyonel) --- #}
+  {% if similar_equipments %}
+    <hr class="my-5">
+    <h2>{% trans "Similar Equipment" %}</h2>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+       {% for item in similar_equipments %}
+            <div class="col">
+              <div class="card h-100">
+                {% if item.image %}
+                  <a href="{{ item.get_absolute_url }}">
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}" style="height: 150px; object-fit: cover;">
+                  </a>
+                {% else %}
+                   <a href="{{ item.get_absolute_url }}">
+                     <img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="{% trans 'No image available' %}" style="height: 150px; object-fit: cover; background-color: #eee;">
+                   </a>
+                {% endif %}
+                <div class="card-body p-2">
+                  <h6 class="card-title mb-1">
+                      <a href="{{ item.get_absolute_url }}" class="text-decoration-none text-dark small">{{ item }}</a>
+                  </h6>
+                  <p class="card-text text-muted small">
+                       {% if item.category %}{{ item.category.name }}{% endif %}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+    </div>
+  {% endif %}
+
+{% endblock content %}

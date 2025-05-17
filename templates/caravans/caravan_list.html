@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load static i18n %}
+
+{% block title %}
+  {% if caravan_type %}{{ caravan_type.name }}{% else %}{% trans "All Caravans" %}{% endif %} - {% trans "Caravans" %} - {{ block.super }}
+{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    {# Sol Kenar Çubuğu - Tipler (ve ileride Markalar) #}
+    <div class="col-md-3 mb-4 mb-md-0">
+      <h3>{% trans "Types" %}</h3>
+      <div class="list-group mb-4"> {# Tipler için grup #}
+        <a href="{% url 'caravans:list' %}" class="list-group-item list-group-item-action {% if not caravan_type %}active{% endif %}">
+          {% trans "All Types" %}
+        </a>
+        {% for type in types %}
+          <a href="{{ type.get_absolute_url }}" class="list-group-item list-group-item-action {% if caravan_type and caravan_type.slug == type.slug %}active{% endif %}">
+            {{ type.name }}
+          </a>
+        {% empty %}
+          <p class="list-group-item">{% trans "No types found." %}</p>
+        {% endfor %}
+      </div>
+
+      <h3>{% trans "Brands" %}</h3>
+      <div class="list-group">
+        <a href="{% url 'caravans:list' %}" class="list-group-item list-group-item-action {% if not brand %}active{% endif %}">
+          {% trans "All Brands" %}
+        </a>
+        {% for brand_name, brand_slug in brands_with_caravans %}
+          <a href="{% url 'caravans:list' brand_slug=brand_slug %}" class="list-group-item list-group-item-action {% if brand and brand.slug == brand_slug %}active{% endif %}">
+            {{ brand_name }}
+          </a>
+        {% empty %}
+          <p class="list-group-item">{% trans "No brands found." %}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# Sağ İçerik Alanı - Karavan Listesi #}
+    <div class="col-md-9">
+      <h1>
+        {% if caravan_type %}{{ caravan_type.name }}{% else %}{% trans "All Caravan Models" %}{% endif %}
+        {# Marka filtresi aktifse: {% if brand %} by {{ brand.name }}{% endif %} #}
+      </h1>
+      <hr>
+
+      {% if caravan_data %}
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-4">
+          {% for data in caravan_data %}
+            {% with caravan=data.caravan %}
+            <div class="col">
+              <div class="card h-100 shadow-sm card">
+                <div class="image-container">
+                  <a href="{{ caravan.get_absolute_url }}">
+{% if caravan.get_display_image and caravan.get_display_image.image %}
+<img src="{{ caravan.get_display_image.image.url }}" class="card-img-top" alt="{{ caravan.model_name }}">
+{% else %}
+  <img src="{% static 'images/placeholder.png' %}" class="card-img-top" alt="{% trans 'No image available' %}">
+{% endif %}
+                  </a>
+                </div>
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title">
+                    <a href="{{ caravan.get_absolute_url }}" class="text-decoration-none text-dark">{{ caravan.model_name }}</a>
+                  </h5>
+                  <div class="card-subtitle text-muted small mb-1">
+                    {% if caravan.type %}<div class="category">{{ caravan.type.name }}</div>{% endif %}
+                    {% if caravan.brand %}<div class="brand">{{ caravan.brand.name }}</div>{% endif %}
+                  </div>
+                  <div class="card-text text-muted small mb-2">
+                    {% if data.review_count > 0 %}
+                      Reviews: {% if data.review_count > 999 %}999+{% else %}{{ data.review_count }}{% endif %}
+                      | Rating: {{ data.average_rating|floatformat:2 }}
+                    {% else %}
+                      No reviews yet
+                    {% endif %}
+                  </div>
+                  <p class="card-text small text-muted flex-grow-1">{{ caravan.description|truncatewords:15 }}</p>
+                </div>
+                <div class="card-footer text-center bg-light border-top-0">
+                   <a href="{{ caravan.get_absolute_url }}" class="btn btn-sm btn-outline-primary w-100">{% trans "View Details" %}</a>
+                </div>
+              </div>
+            </div>
+            {% endwith %}
+          {% endfor %}
+        </div>
+         {# İleride Sayfalama (Pagination) eklenebilir #}
+      {% else %}
+        <div class="alert alert-info" role="alert">
+            {% trans "No caravan models found matching your criteria." %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}

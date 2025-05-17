@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% load i18n static contenttypes %}
+
+{% block title %}{{ brand.name }} - {% trans "Brands" %} - {{ block.super }}{% endblock title %}
+
+{% block content %}
+  <div class="row">
+    {# Brand Logo #}
+    <div class="col-md-4 mb-4">
+      {% if brand.logo %}
+        <img src="{{ brand.logo.url }}" class="img-fluid rounded" alt="{{ brand.name }}">
+      {% else %}
+        <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded" alt="{% trans 'No logo available' %}" style="background-color: #eee;">
+      {% endif %}
+    </div>
+
+    {# Brand Information #}
+    <div class="col-md-8">
+      <h1>{{ brand.name }}</h1>
+      {% if brand.description %}
+        <p>{{ brand.description|linebreaksbr }}</p>
+      {% endif %}
+      {% if brand.country_of_origin %}
+        <p>{% trans "Country of Origin" %}: {{ brand.country_of_origin }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  {# --- Tabs --- #}
+  <ul class="nav nav-tabs" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="true">{% trans "Products" %}</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="brand-reviews-tab" data-bs-toggle="tab" data-bs-target="#brand-reviews" type="button" role="tab" aria-controls="brand-reviews" aria-selected="false">{% trans "Brand Reviews" %}</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="product-reviews-tab" data-bs-toggle="tab" data-bs-target="#product-reviews" type="button" role="tab" aria-controls="product-reviews" aria-selected="false">{% trans "Product Reviews" %}</button>
+    </li>
+  </ul>
+
+  {# --- Tab Content --- #}
+  <div class="tab-content" id="myTabContent">
+    {# --- Products Tab --- #}
+    <div class="tab-pane fade show active" id="products" role="tabpanel" aria-labelledby="products-tab">
+      {# Related Equipment #}
+      <h2>{% trans "Related Equipment" %}</h2>
+      {% if equipment %}
+        <div class="row">
+          {% for item in equipment %}
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">{{ item.name }}</h5>
+                  <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                  <a href="{{ item.get_absolute_url }}" class="btn btn-primary">{% trans "View Details" %}</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>{% trans "No equipment available for this brand." %}</p>
+      {% endif %}
+
+      {# Related Caravans #}
+      <h2>{% trans "Related Caravans" %}</h2>
+      {% if caravans %}
+        <div class="row">
+          {% for item in caravans %}
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">{{ item.model_name }}</h5>
+                  <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                  <a href="{{ item.get_absolute_url }}" class="btn btn-primary">{% trans "View Details" %}</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p>{% trans "No caravans available for this brand." %}</p>
+      {% endif %}
+    </div>
+
+    {# --- Brand Reviews Tab --- #}
+    <div class="tab-pane fade" id="brand-reviews" role="tabpanel" aria-labelledby="brand-reviews-tab">
+      <h2>{% trans "Brand Reviews" %}</h2>
+      {% if brand_reviews %}
+        {% for review in brand_reviews %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ review.user.username }}</h5>
+              <p class="card-text">{{ review.text }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>{% trans "No reviews available for this brand." %}</p>
+      {% endif %}
+
+      {# --- Yorum Ekleme Formu --- #}
+      <hr>
+      <h4>{% trans "Add Your Review" %}</h4>
+      {% if user.is_authenticated %}
+       {% get_content_type brand as brand_content_type %}
+
+       <form action="{% url 'reviews:add_review' content_type_id=brand_content_type.id object_id=brand.pk %}" method="post">
+           {% csrf_token %}
+           {{ review_form.as_p }}
+           <button type="submit" class="btn btn-primary mt-2">{% trans "Submit Review" %}</button>
+       </form>
+
+      {% else %}
+          <p><em>{% trans "You must be" %} <a href="{% url 'login' %}?next={{ request.path }}">{% trans "logged in" %}</a> {% trans "to add a review." %}</em></p>
+      {% endif %}
+    </div>
+
+    {# --- Product Reviews Tab --- #}
+    <div class="tab-pane fade" id="product-reviews" role="tabpanel" aria-labelledby="product-reviews-tab">
+      <h2>{% trans "Equipment Reviews" %}</h2>
+      {% if equipment_reviews %}
+        {% for review, equipment_name in equipment_reviews %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ review.user.username }} - {{ equipment_name }}</h5>
+              <p class="card-text">{{ review.text }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>{% trans "No reviews available for this brand's equipment." %}</p>
+      {% endif %}
+
+      <h2>{% trans "Caravan Reviews" %}</h2>
+      {% if caravan_reviews %}
+        {% for review, caravan_name in caravan_reviews %}
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ review.user.username }} - {{ caravan_name }}</h5>
+              <p class="card-text">{{ review.text }}</p>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>{% trans "No reviews available for this brand's caravans." %}</p>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}

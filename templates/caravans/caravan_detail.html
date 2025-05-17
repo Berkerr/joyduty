@@ -1,0 +1,187 @@
+{# templates/caravans/caravan_detail.html #}
+
+{% extends "base.html" %}
+{% load static i18n contenttypes %}
+
+{% block title %}{{ caravan }} - {% trans "Caravans" %} - {{ block.super }}{% endblock title %}
+
+{% block content %}
+  {# Sayfa içi navigasyon (Breadcrumb) #}
+  <nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+      <li class="breadcrumb-item"><a href="{% url 'caravans:list' %}">{% trans "Caravans" %}</a></li>
+      {% if caravan.type %}
+        <li class="breadcrumb-item"><a href="{{ caravan.type.get_absolute_url }}">{{ caravan.type.name }}</a></li>
+      {% endif %}
+      <li class="breadcrumb-item active" aria-current="page">{{ caravan }}</li> {# Marka + Model #}
+    </ol>
+  </nav>
+
+  {# Ana Başlık ve Tip Rozeti #}
+  <h1>{{ caravan }}</h1> {# Marka + Model (__str__) #}
+  {% if caravan.type %}
+    <span class="badge bg-secondary mb-3">{{ caravan.type.name }}</span>
+  {% endif %}
+
+  <div class="row mb-4">
+    {# Resim Galerisi (Bootstrap Carousel) #}
+    <div class="col-md-8">
+      {% with images=caravan.images.all %} {# View'da prefetch edildiği için .all() burada sorunsuz #}
+        {% if images %}
+          <div id="caravanImageCarousel" class="carousel slide shadow-sm mb-3 mb-md-0" data-bs-ride="carousel">
+            <div class="carousel-inner">
+              {% for img in images %}
+                <div class="carousel-item {% if img.is_primary or forloop.first %}active{% endif %}"> {# Primary veya ilk resim aktif #}
+                  <img src="{{ img.image.url }}" class="d-block w-100" alt="{{ img.caption|default:caravan }}" style="aspect-ratio: 16 / 9; object-fit: cover;">
+                  {% if img.caption %}
+                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-2 rounded">
+                      <p class="mb-0">{{ img.caption }}</p>
+                    </div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+            {% if images|length > 1 %} {# Birden fazla resim varsa kontrol ekle #}
+              <button class="carousel-control-prev" type="button" data-bs-target="#caravanImageCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">{% trans "Previous" %}</span>
+              </button>
+              <button class="carousel-control-next" type="button" data-bs-target="#caravanImageCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">{% trans "Next" %}</span>
+              </button>
+            {% endif %}
+          </div>
+        {% else %}
+          {# Hiç resim yoksa placeholder #}
+          <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded shadow-sm" alt="{% trans 'No image available' %}" style="background-color: #f8f9fa;">
+        {% endif %}
+      {% endwith %}
+    </div>
+
+    {# Temel Bilgiler ve Özellikler (Sağ Sütun) #}
+    <div class="col-md-4">
+      <div class="card">
+        <div class="card-header">
+          <strong>{% trans "Key Information" %}</strong>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item"><strong>{% trans "Brand" %}:</strong> {{ caravan.brand.name }}</li>
+          <li class="list-group-item"><strong>{% trans "Model" %}:</strong> {{ caravan.model_name }}</li>
+          {% if caravan.type %}<li class="list-group-item"><strong>{% trans "Type" %}:</strong> {{ caravan.type.name }}</li>{% endif %}
+          {% if caravan.year_start %}
+            <li class="list-group-item"><strong>{% trans "Production" %}:</strong> {{ caravan.year_start }}{% if caravan.year_end %} - {{ caravan.year_end }}{% else %} - {% trans "Present" %}{% endif %}</li>
+          {% endif %}
+          {% if caravan.berths %}<li class="list-group-item"><strong>{% trans "Berths" %}:</strong> {{ caravan.berths }}</li>{% endif %}
+          {% if caravan.length_mm %}<li class="list-group-item"><strong>{% trans "Length" %}:</strong> {{ caravan.length_mm }} mm</li>{% endif %}
+          {% if caravan.width_mm %}<li class="list-group-item"><strong>{% trans "Width" %}:</strong> {{ caravan.width_mm }} mm</li>{% endif %}
+          {% if caravan.height_mm %}<li class="list-group-item"><strong>{% trans "Height" %}:</strong> {{ caravan.height_mm }} mm</li>{% endif %}
+          {% if caravan.max_weight_kg %}<li class="list-group-item"><strong>{% trans "Max. Weight" %}:</strong> {{ caravan.max_weight_kg }} kg</li>{% endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {# Açıklama Bölümü #}
+  {% if caravan.description %}
+    <div class="mb-4">
+      <h3>{% trans "Description" %}</h3>
+      <p>{{ caravan.description|linebreaksbr }}</p> {# Satır sonlarını <br> yapar #}
+    </div>
+  {% endif %}
+
+  {# Donanımlar Bölümü - View'dan gelen ayrılmış listelerle #}
+  {% if standard_equipment or optional_equipment %} {# Genel kontrol: Herhangi bir ekipman var mı? #}
+      <div class="row mb-4">
+        {# Standart Donanımlar Sütunu #}
+        <div class="col-md-6">
+          <h3>{% trans "Standard Equipment" %}</h3>
+          {% if standard_equipment %} {# Standart liste boş değilse #}
+            <ul class="list-unstyled">
+              {% for item in standard_equipment %} {# item = CaravanEquipment nesnesi #}
+                <li><i class="fas fa-check text-success me-2"></i><a href="{% url 'equipment:detail_by_pk' pk=item.equipment.pk %}">{{ item.equipment }}</a></li> {# item.equipment ile Equipment nesnesine ulaş #}
+              {% endfor %}
+            </ul>
+          {% else %} {# Standart liste boşsa #}
+            <p><em>{% trans "No standard equipment listed." %}</em></p>
+          {% endif %}
+        </div>
+
+        {# Opsiyonel Donanımlar Sütunu #}
+        <div class="col-md-6">
+          <h3>{% trans "Optional Equipment" %}</h3>
+          {% if optional_equipment %} {# Opsiyonel liste boş değilse #}
+            <ul class="list-unstyled">
+              {% for item in optional_equipment %}
+                 <li><i class="fas fa-plus text-info me-2"></i><a href="{% url 'equipment:detail_by_pk' pk=item.equipment.pk %}">{{ item.equipment }}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %} {# Opsiyonel liste boşsa #}
+             <p><em>{% trans "No optional equipment listed." %}</em></p>
+          {% endif %}
+        </div>
+      </div>
+  {% else %} {# Ne standart ne de opsiyonel ekipman varsa #}
+       <p><em>{% trans "No equipment information available for this model." %}</em></p>
+  {% endif %}
+
+  {# --- Yorumlar Bölümü --- #}
+  <hr class="my-4">
+  <h3>{% trans "Reviews" %} ({{ reviews.count }}) - {% trans "Average Rating" %}: {{ average_rating|default:"N/A" }}</h3> {# Yorum sayısını göster #}
+  <div id="reviews-section">
+      {% if reviews %}
+          {% for review in reviews %}
+              <div class="card mb-3 shadow-sm">
+                  <div class="card-body">
+                      <h6 class="card-subtitle mb-2 text-muted">
+                          <i class="fas fa-user me-1"></i> {{ review.user.username }}
+                          <small class="ms-2">- {{ review.created_at|date:"d M Y, H:i" }}</small> {# Tarih formatı #}
+                      </h6>
+                      {% if review.rating %}
+                          <p class="mb-1">
+                              {% trans "Rating" %}:
+                              {# Basit yıldız gösterimi (CSS ile daha güzeli yapılabilir) #}
+                              {% for i in "12345"|make_list %}
+                                  {% if i|add:"0" <= review.rating %}
+                                      <i class="fas fa-star text-warning"></i> {# Dolu yıldız #}
+                                  {% else %}
+                                      <i class="far fa-star text-warning"></i> {# Boş yıldız #}
+                                  {% endif %}
+                              {% endfor %}
+                              ({{ review.rating }}/5)
+                          </p>
+                      {% endif %}
+                      <p class="card-text">{{ review.text|linebreaksbr }}</p>
+                      {# İleride düzenleme/silme linkleri eklenebilir (yetkiye göre) #}
+                  </div>
+              </div>
+          {% endfor %}
+      {% else %}
+          <p><em>{% trans "Be the first to review this caravan model!" %}</em></p>
+      {% endif %}
+
+      {# --- Yorum Ekleme Formu --- #}
+      <hr>
+      <h4>{% trans "Add Your Review" %}</h4>
+      {% if user.is_authenticated %}
+       {# --- BU SATIRI KONTROL EDİN --- #}
+       {% get_content_type caravan as caravan_content_type %}
+
+       <form action="{% url 'reviews:add_review' content_type_id=caravan_content_type.id object_id=caravan.pk %}" method="post">
+           {% csrf_token %}
+           {{ review_form.as_p }}
+           <button type="submit" class="btn btn-primary mt-2">{% trans "Submit Review" %}</button>
+       </form>
+
+      {% else %} {# Giriş yapmamışsa mesaj göster #}
+          <p><em>{% trans "You must be" %} <a href="{% url 'login' %}?next={{ request.path }}">{% trans "logged in" %}</a> {% trans "to add a review." %}</em></p>
+      {% endif %}
+  </div> {# reviews-section kapanışı #}
+
+{% endblock content %}
+
+{% block extra_js %}
+{# İkonlar için FontAwesome (İsteğe Bağlı) - Kit kodunuzu eklemelisiniz #}
+{# <script src="https://kit.fontawesome.com/YOUR_KIT_CODE.js" crossorigin="anonymous"></script> #}
+{% endblock extra_js %}
