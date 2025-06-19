@@ -1,11 +1,26 @@
 # equipment/views.py
-from django.shortcuts import render, get_object_or_404, Http404
+from django.shortcuts import render, get_object_or_404, Http404, redirect
 # Review modelini ve ContentType'ı import et
 from django.contrib.contenttypes.models import ContentType
 from reviews.models import Review
 from reviews.forms import ReviewForm # Yorum formunu import et
 from .models import Equipment, EquipmentCategory
 from brands.models import Brand
+from .forms import EquipmentForm
+
+def equipment_create(request):
+    if request.method == 'POST':
+        form = EquipmentForm(request.POST, request.FILES)
+        if form.is_valid():
+            equipment = form.save(commit=False)
+            equipment.created_by = request.user
+            equipment.save()
+            return redirect('equipment:detail_by_pk', pk=equipment.pk)
+        else:
+            print(form.errors)
+    else:
+        form = EquipmentForm()
+    return render(request, 'equipment/equipment_form.html', {'form': form})
 
 # BU FONKSİYONUN VAR OLDUĞUNDAN VE ADININ DOĞRU OLDUĞUNDAN EMİN OLUN
 def equipment_list(request, category_slug=None, brand_slug=None):

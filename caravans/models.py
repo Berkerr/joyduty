@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings # Kullanıcı modeline bağlanmak için
 from brands.models import Brand
 from equipment.models import Equipment
+from django.contrib.auth import get_user_model # Import get_user_model
 from django.utils.text import slugify
 from django.urls import reverse
 
@@ -32,6 +33,14 @@ class CaravanModel(models.Model):
         verbose_name="Brand"
     )
     model_name = models.CharField(max_length=150, verbose_name="Model Name")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, # Keep the caravan model if the user is deleted
+        null=True, # Allow null for existing models or if creator is unknown
+        blank=True, # Allow blank in forms
+        related_name='created_caravan_models', # Reverse relation name
+        verbose_name="Created By"
+    )
     type = models.ForeignKey(
         CaravanType,
         on_delete=models.SET_NULL, # Tip silinirse modeli silme, null yap

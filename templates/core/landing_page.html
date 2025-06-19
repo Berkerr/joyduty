@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load i18n static %}
+
+{% block title %}{% trans "Welcome" %} - {{ block.super }}{% endblock title %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1>{% trans "Welcome to JoyDuty" %}</h1>
+    <p class="lead">{% trans "Discover and share your passion for caravans, equipment, and travel." %}</p>
+    <div class="mt-4">
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg me-2">{% trans "Login" %}</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-outline-secondary btn-lg">{% trans "Register" %}</a>
+    </div>
+</div>
+
+{# Caravan Section Card #}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            {% if caravan_type %}
+                {{ caravan_type.name }} {% trans "Category" %}
+            {% else %}
+                {% trans "Caravan Category" %}
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {# Block 1: Category Explanation #}
+            <div class="mb-4">
+                {% if caravan_type and caravan_type.description %}
+                    <p>{{ caravan_type.description }}</p>
+                {% else %}
+                    <p>{% trans "Explore the world of caravans, from motorhomes to campervans and more. Find the perfect vehicle for your travel adventures." %}</p>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {# Block 2: Newly Added Caravans #}
+                <div class="col-md-3 mb-4">
+                    <h5>{% trans "Newly Added Caravans" %}</h5>
+                {% if latest_caravans %}
+                    <ul class="list-group list-group-flush">
+                        {% for caravan in latest_caravans %}
+                            <li class="list-group-item">
+                                <a href="{{ caravan.get_absolute_url }}">{{ caravan.brand.name }} {{ caravan.model_name|truncatechars:30 }}</a>
+                                <small class="text-muted float-end">{{ caravan.created_at|date:"d M Y" }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>{% trans "No newly added caravans found." %}</p>
+                {% endif %}
+                </div>
+
+                {# Block 3: Recently Updated Caravans #}
+                <div class="col-md-3 mb-4">
+                    <h5>{% trans "Recently Updated Caravans" %}</h5>
+                {% if recently_updated_caravans %}
+                    <ul class="list-group list-group-flush">
+                        {% for caravan in recently_updated_caravans %}
+                            <li class="list-group-item">
+                                <a href="{{ caravan.get_absolute_url }}">{{ caravan.brand.name }} {{ caravan.model_name|truncatechars:30 }}</a>
+                                <small class="text-muted float-end">{{ caravan.updated_at|date:"d M Y" }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>{% trans "No recently updated caravans found." %}</p>
+                {% endif %}
+                </div>
+
+                {# Block 4: Caravans with Recent Reviews #}
+                <div class="col-md-3 mb-4">
+                    <h5>{% trans "Caravans with Recent Reviews" %}</h5>
+                {% if caravans_with_recent_reviews %}
+                    <ul class="list-group list-group-flush">
+                        {% for caravan in caravans_with_recent_reviews %}
+                            <li class="list-group-item">
+                                <a href="{{ caravan.get_absolute_url }}">{{ caravan.brand.name }} {{ caravan.model_name|truncatechars:30 }}</a>
+                                {# Optionally display review count or latest review date if available in the caravan object #}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>{% trans "No caravans with recent reviews found." %}</p>
+                {% endif %}
+                </div>
+            </div> {# Close the row #}
+            {# Link to Caravan Category Page #}
+            {% if caravan_type %}
+                <div class="mt-3 text-center">
+                    <a href="{{ caravan_type.get_absolute_url }}" class="btn btn-outline-primary">{% trans "Explore All" %} {{ caravan_type.name }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{# Equipment Section Card #}
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            {% if equipment_category %}
+                {{ equipment_category.name }} {% trans "Category" %}
+            {% else %}
+                {% trans "Equipment Category" %}
+            {% endif %}
+        </div>
+        <div class="card-body">
+            {# Block 1: Category Explanation #}
+            <div class="mb-4">
+                {% if equipment_category and equipment_category.description %} {# Assuming description field exists on EquipmentCategory #}
+                    <p>{{ equipment_category.description }}</p>
+                {% else %}
+                    <p>{% trans "Find the right equipment for your caravan adventures, from essential gear to useful accessories." %}</p>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {# Block 2: Newly Added Equipment #}
+                <div class="col-md-3 mb-4">
+                    <h5>{% trans "Newly Added Equipment" %}</h5>
+                {% if latest_equipment %}
+                    <ul class="list-group list-group-flush">
+                        {% for item in latest_equipment %}
+                            <li class="list-group-item">
+                                <a href="{{ item.get_absolute_url }}">{{ item.name|truncatechars:25 }}</a>
+                                <small class="text-muted float-end">{{ item.created_at|date:"d M Y" }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>{% trans "No newly added equipment found." %}</p>
+                {% endif %}
+                </div>
+
+                {# Block 3: Equipment with Recent Reviews #}
+                <div class="col-md-3 mb-4">
+                    <h5>{% trans "Equipment with Recent Reviews" %}</h5>
+                {% if equipment_with_recent_reviews %}
+                    <ul class="list-group list-group-flush">
+                        {% for item in equipment_with_recent_reviews %}
+                            <li class="list-group-item">
+                                <a href="{{ item.get_absolute_url }}">{{ item.name|truncatechars:30 }}</a>
+                                {# Optionally display review count or latest review date if available in the equipment object #}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>{% trans "No equipment with recent reviews found." %}</p>
+                {% endif %}
+                </div>
+            </div> {# Close the row #}
+
+            {# Note: Omitting "Recently Updated Equipment" block as there is no 'updated_at' field on the Equipment model #}
+
+            {# Link to Equipment Category Page #}
+            {% if equipment_category %}
+                <div class="mt-3 text-center">
+                    <a href="{{ equipment_category.get_absolute_url }}" class="btn btn-outline-primary">{% trans "Explore All" %} {{ equipment_category.name }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock content %}

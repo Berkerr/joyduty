@@ -6,6 +6,21 @@ from .models import Brand
 from equipment.models import Equipment
 from caravans.models import CaravanModel
 from geo.models import Country
+from .forms import BrandForm
+from django.shortcuts import render, get_object_or_404, redirect
+
+def brand_create(request):
+    if request.method == 'POST':
+        form = BrandForm(request.POST, request.FILES)
+        if form.is_valid():
+            brand = form.save(commit=False)
+            brand.created_by = request.user
+            brand.save()
+            return redirect('brands:detail', slug=brand.slug)
+    else:
+        form = BrandForm()
+    return render(request, 'brands/brand_form.html', {'form': form})
+
 
 
 def brand_list(request):

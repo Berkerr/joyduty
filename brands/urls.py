@@ -8,5 +8,6 @@ urlpatterns = [
     # Marka listesi
     path('', views.brand_list, name='list'),
     # İleride marka detay sayfası için bir path eklenebilir:
-    path('<slug:slug>/', views.brand_detail, name='detail'),
+    path('brand/<slug:slug>/', views.brand_detail, name='detail'),
+    path('new/', views.brand_create, name='create'),
 ]

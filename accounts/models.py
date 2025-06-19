@@ -15,6 +15,13 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+class Follower(models.Model):
+    follower = models.ForeignKey(User, related_name='following', on_delete=models.CASCADE)
+    following = models.ForeignKey(User, related_name='followers', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.follower.username} follows {self.following.username}"
+
 class Inventory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='inventory', verbose_name="User")
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

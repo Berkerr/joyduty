@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% load i18n static contenttypes %}
+{% load i18n static %}
+{% load brand_extras %}
 
 {% block title %}{{ brand.name }} - {% trans "Brands" %} - {{ block.super }}{% endblock title %}
 

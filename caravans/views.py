@@ -1,5 +1,5 @@
 # caravans/views.py
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 # Review modelini ve ContentType'ı import et
 from django.contrib.contenttypes.models import ContentType
 from reviews.models import Review
@@ -7,8 +7,8 @@ from reviews.forms import ReviewForm # Yorum formunu import et
 from django.conf import settings
 from .models import CaravanModel, CaravanType, CaravanImage, CaravanEquipment
 from brands.models import Brand
+from .forms import CaravanModelForm
 
-# BU FONKSİYONUN VAR OLDUĞUNDAN VE ADININ DOĞRU OLDUĞUNDAN EMİN OLUN
 def caravan_list(request, type_slug=None, brand_slug=None):
     """
     Tüm onaylanmış karavanları, belirli bir tipe veya markaya ait olanları listeler.
@@ -147,3 +147,15 @@ def caravan_detail_by_pk(request, pk):
         'average_rating': average_rating,
     }
     return render(request, 'caravans/caravan_detail.html', context)
+
+def caravan_create(request):
+    if request.method == 'POST':
+        form = CaravanModelForm(request.POST)
+        if form.is_valid():
+            caravan = form.save(commit=False)
+            caravan.created_by = request.user
+            caravan.save()
+            return redirect('caravans:detail_by_pk', pk=caravan.pk)
+    else:
+        form = CaravanModelForm()
+    return render(request, 'caravans/caravan_form.html', {'form': form})

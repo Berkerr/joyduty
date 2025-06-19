@@ -4,6 +4,7 @@ from django.db import models
 from django.urls import reverse  # URL'leri tersine çevirmek için
 from brands.models import Brand # Marka modelini import ediyoruz
 from mptt.models import MPTTModel, TreeForeignKey # Import MPTT classes
+from django.conf import settings # Import settings to link to AUTH_USER_MODEL
 
 # Create your models here.
 
@@ -40,6 +41,14 @@ class EquipmentCategory(MPTTModel): # Inherit from MPTTModel
 
 class Equipment(models.Model):
     name = models.CharField(max_length=200, verbose_name="Equipment Name")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL, # Keep the equipment if the user is deleted
+        null=True, # Allow null for existing equipment or if creator is unknown
+        blank=True, # Allow blank in forms
+        related_name='created_equipment', # Reverse relation name
+        verbose_name="Created By"
+    )
     description = models.TextField(blank=True, null=True, verbose_name="Description")
     category = models.ForeignKey(
         EquipmentCategory,

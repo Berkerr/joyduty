@@ -28,64 +28,62 @@
   </head>
   <body>
 
-    {# --- Navigasyon Menüsü --- #}
-    <nav class="navbar navbar-expand-md navbar-dark mb-4" style="background-color: #556B2F !important;">
+    {# --- Navigasyon Menüsü (Styled like reference image) --- #}
+    <nav class="navbar navbar-expand-md navbar-light bg-light mb-4"> {# Light background #}
       <div class="container">
+
         <a class="navbar-brand" href="{% url 'home' %}">
           JoyDuty {# Site logo text #}
         </a> {# Site logo link to homepage #}
-        <a class="navbar-brand" href="{% url 'home' %}">
-          <i class="fas fa-home"></i> {# Home icon #}
-        </a> {# Ana sayfaya link #}
+
+
+      
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-            {# Library Dropdown #}
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownLibrary" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-book"></i> {# Library icon #}
-              </a>
-              <ul class="dropdown-menu" aria-labelledby="navbarDropdownLibrary">
-                <li><a class="dropdown-item {% if request.resolver_match.app_name == 'caravans' %}active{% endif %}" href="{% url 'caravans:list' %}">{% trans "Caravans" %}</a></li>
-                <li><a class="dropdown-item {% if request.resolver_match.app_name == 'equipment' %}active{% endif %}" href="{% url 'equipment:list' %}">{% trans "Equipment" %}</a></li>
-                <li><a class="dropdown-item {% if request.resolver_match.app_name == 'brands' %}active{% endif %}" href="{% url 'brands:list' %}">{% trans "Brands" %}</a></li>
-              </ul>
+        <div class="collapse navbar-collapse justify-content-center" id="navbarNav"> {# Center the content #}
+          <ul class="navbar-nav"> {# No me-auto/ms-auto here #}
+            <li class="nav-item">
+              <form class="d-flex" role="search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+              </form>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.app_name == 'locations' %}active{% endif %}" href="{% url 'locations:list' %}">
-                <i class="fas fa-map-pin"></i> {# Pin icon for Locations #}
-              </a>
+              <a class="nav-link" href="{% url 'caravans:list' %}" title="Caravans"><i class="fas fa-caravan"></i></a> {# Caravans icon #}
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'equipment:list' %}" title="Equipment"><i class="fas fa-tools"></i></a> {# Equipment icon #}
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'locations:list' %}" title="Locations"><i class="fas fa-map-pin"></i></a> {# Locations icon #}
             </li>
              <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.url_name == 'map' %}active{% endif %}" href="{% url 'map' %}">
-                <i class="fas fa-map"></i> {# Map icon #}
-              </a>
+              <a class="nav-link" href="{% url 'messaging:conversation_list' %}" title="Messages"><i class="fas fa-envelope"></i></a> {# Messages icon #}
             </li>
-            {# Explore Placeholder #}
-            <li class="nav-item">
-              <a class="nav-link" href="#">
-                <i class="fas fa-compass"></i> {# Compass icon for Explore #}
-              </a>
+             <li class="nav-item">
+              <a class="nav-link" href="#" title="Explore"><i class="fas fa-compass"></i></a> {# Explore icon #}
             </li>
           </ul>
-          {# --- Kullanıcı ve Dil Alanı (Sağ Taraf) --- #}
-          <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link {% if request.resolver_match.app_name == 'messaging' %}active{% endif %}" href="{% url 'messaging:conversation_list' %}">{% trans "Messages" %}</a>
+        </div>
+        {# Right-aligned user/notification/language area #}
+        <ul class="navbar-nav ms-auto">
+             <li class="nav-item">
+                <a class="nav-link" href="#" title="Notifications"><i class="fas fa-bell"></i></a> {# Notifications icon #}
             </li>
               {% if user.is_authenticated %}
                   <li class="nav-item dropdown">
                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ user.username }}
+                            {# Display user avatar or icon #}
+                            <i class="fas fa-user-circle"></i> {# Placeholder user icon #}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownUser">
                             <li><a class="dropdown-item" href="{% url 'users:profile' username=user.username %}">{% trans "My Profile" %}</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                {# Çıkış için bir form kullanmak daha güvenlidir #}
-                               <form id="logout-form" action="{% url 'logout' %}" method="post" style="display: none;">
+                               {# Çıkış için bir form kullanmak daha güvenlidir #}
+                               <form id="logout-form" action="{% url 'users:logout' %}" method="post" style="display: none;">
                                 {% csrf_token %}
                                </form>
                                <a class="dropdown-item" href="#" onclick="document.getElementById('logout-form').submit(); return false;">{% trans "Logout" %}</a>
@@ -93,20 +91,23 @@
                        </ul>
                   </li>
               {% else %}
+                  {# Simplified login/register - maybe just a user icon linking to login #}
                   <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">{% trans "Login" %}</a>
+                    <a class="nav-link" href="{% url 'users:login' %}" title="Login"><i class="fas fa-sign-in-alt"></i></a> {# Login icon #}
                   </li>
-                  <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.view_name == 'users:register' %}active{% endif %}" href="{% url 'users:register' %}">{% trans "Register" %}</a>
-                  </li>
+                  {# Optionally add a register link/icon #}
+                  {# <li class="nav-item">
+                    <a class="nav-link" href="{% url 'users:register' %}" title="Register"><i class="fas fa-user-plus"></i></a>
+                  </li> #}
               {% endif %}
 
               {# --- Dil Seçici (Basit Örnek) --- #}
+              {# Decide if language selector should be an icon or text - keeping as dropdown for now #}
               <li class="nav-item dropdown">
                  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownLang" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                    {% get_current_language as LANGUAGE_CODE %}
                    {% get_language_info for LANGUAGE_CODE as lang %}
-                   {{ lang.name_local }} ({{ LANGUAGE_CODE }})
+                   {{ LANGUAGE_CODE|upper }} {# Display language code like EN, TR #}
                  </a>
                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownLang">
                    {% get_available_languages as LANGUAGES %}
@@ -151,7 +152,12 @@
     {# --- Alt Bilgi (Footer) --- #}
     <footer class="container mt-5 py-3 text-center text-muted border-top">
         <p>© {% now "Y" %} JoyDuty.com. All rights reserved.</p>
-        {# İleride gizlilik politikası, kullanım şartları linkleri eklenebilir #}
+        <div class="footer-links mt-2">
+            <a href="{% url 'about' %}" class="text-muted me-3">{% trans "About Us" %}</a>
+            <a href="{% url 'contact' %}" class="text-muted me-3">{% trans "Contact" %}</a>
+            <a href="{% url 'privacy_policy' %}" class="text-muted me-3">{% trans "Privacy Policy" %}</a>
+            <a href="{% url 'terms_of_service' %}" class="text-muted">{% trans "Terms of Service" %}</a>
+        </div>
     </footer>
 
 

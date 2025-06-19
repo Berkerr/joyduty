@@ -18,4 +18,5 @@ urlpatterns = [
     path('detail/<int:pk>/', views.caravan_detail_by_pk, name='detail_by_pk'),
     # İleride slug tabanlı detay URL'si:
     path('<slug:brand_slug>/<slug:model_slug>/', views.caravan_detail_by_slugs, name='detail_by_slugs'),
+    path('new/', views.caravan_create, name='create'),
 ]

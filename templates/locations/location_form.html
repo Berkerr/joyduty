@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Suggest New Location" %}{% endblock %}
+
+{% block content %}
+  <h1>{% trans "Suggest New Location" %}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans "Suggest" %}</button>
+  </form>
+{% endblock %}

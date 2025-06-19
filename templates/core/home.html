@@ -1,124 +1,130 @@
-{% extends "base.html" %} {# base.html'den miras al #}
-{% load i18n static %} {# Gerekirse trans etiketini kullanmak için #}
+{% extends "base.html" %}
+{% load i18n static %}
+{% load i18n %}
+{% load static %}
 
-{% block title %}{% trans "Home Feed" %} - {{ block.super }}{% endblock title %} {# Sayfa başlığını değiştir #}
+{% block title %}{% trans "Home Feed" %} - {{ block.super }}{% endblock title %}
 
-{% block content %} {# base.html'deki content bloğunu doldur #}
+{% block content %}
 <div class="row">
-
   {# --- Sol Sütun (Kullanıcı Menüleri) --- #}
-  <div class="col-md-3">
+  <div class="col-md-2">
     <h4>{% trans "Menu" %}</h4>
     <div class="list-group">
-      {# TODO: Kullanıcı menü öğelerini buraya ekle (Profil, Mesajlar, Ayarlar vb.) #}
-      <a href="#" class="list-group-item list-group-item-action">{% trans "Profile" %} (Placeholder)</a>
-      <a href="#" class="list-group-item list-group-item-action">{% trans "Messages" %} (Placeholder)</a>
-      <a href="#" class="list-group-item list-group-item-action">{% trans "Settings" %} (Placeholder)</a>
-      <a href="#" class="list-group-item list-group-item-action">{% trans "Saved Items" %} (Placeholder)</a>
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-user me-2"></i> {% trans "My Profile" %}</a>
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-envelope me-2"></i> {% trans "Messages" %}</a>
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-bell me-2"></i> {% trans "Notifications" %}</a>
+    </div>
+    <h4>{% trans "Fast Travel" %}</h4>
+    <div class="list-group">
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-caravan me-2"></i> {% trans "Caravans" %}</a>
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-tools me-2"></i> {% trans "Equipments" %}</a>
+      <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-tag me-2"></i> {% trans "Brands" %}</a>
     </div>
   </div>
 
   {# --- Orta Sütun (Zaman Tüneli) --- #}
-  <div class="col-md-6">
+  <div class="col-md-7">
     {# Sekmeler (Tabs) #}
     <ul class="nav nav-tabs mb-3" id="timelineTabs" role="tablist">
       <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="recommended-tab" data-bs-toggle="tab" data-bs-target="#recommended-tab-pane" type="button" role="tab" aria-controls="recommended-tab-pane" aria-selected="true">{% trans "Recommended" %}</button>
+        <button class="nav-link active" id="recommended-tab" data-bs-toggle="tab" data-bs-target="#recommended-tab-pane" type="button" role="tab" aria-controls="recommended-tab-pane" aria-selected="true">{% trans "Newest" %}</button>
       </li>
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="following-tab" data-bs-toggle="tab" data-bs-target="#following-tab-pane" type="button" role="tab" aria-controls="following-tab-pane" aria-selected="false">{% trans "Following" %}</button>
       </li>
     </ul>
+
     {# Sekme İçerikleri (Tab Panes) #}
     <div class="tab-content" id="timelineTabsContent">
       {# Önerilenler Sekmesi İçeriği #}
       <div class="tab-pane fade show active" id="recommended-tab-pane" role="tabpanel" aria-labelledby="recommended-tab" tabindex="0">
-        <h5>{% trans "Recommended Content" %}</h5>
-        {% if timeline_items %}
-          {% for entry in timeline_items %} {# Changed loop variable to entry #}
-<div class="home-card mb-3">
-              <div class="row g-0">
-                <div class="col-md-2 d-flex align-items-center justify-content-center p-2">
-                  {# --- Image/Logo --- #}
-                  {% with item=entry.object item_type=entry.item_type %} {# Use with tag for easier access #}
-                  {% if item_type == 'Brand' and item.logo %}
-                    <img src="{{ item.logo.url }}" class="img-fluid rounded-start" alt="{{ item.name }} Logo" style="max-height: 60px; width: auto;">
-                  {% elif item_type == 'Equipment' and item.image %}
-                    <img src="{{ item.image.url }}" class="img-fluid rounded-start" alt="{{ item.name }} Image" style="max-height: 60px; width: auto;">
-                  {% elif item_type == 'CaravanModel' %}
-                    {% with display_image=item.get_display_image %}
-                      {% if display_image and display_image.image %}
-                        <img src="{{ display_image.image.url }}" class="img-fluid rounded-start" alt="{{ item.model_name }} Image" style="max-height: 60px; width: auto;">
-                      {% else %}
-                        <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start" alt="{% trans 'No image available' %}" style="max-height: 60px; width: auto;">
-                      {% endif %}
-                    {% endwith %}
-                  {% elif item_type == 'Review' %}
-                     {# Placeholder for Review - maybe user avatar? #}
-                     <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start" alt="{% trans 'Review' %}" style="max-height: 60px; width: auto;">
-                  {% elif item_type == 'Location' %}
-                     {# Placeholder for Location - maybe map icon? #}
-                     <i class="fas fa-map-marker-alt fa-3x text-secondary"></i>
-                  {% else %}
-                    <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start" alt="{% trans 'Placeholder' %}" style="max-height: 60px; width: auto;">
-                  {% endif %}
-                  {% endwith %} {# End with tag #}
-                </div>
-                <div class="col-md-10">
-                  <div class="card-body">
-                    {% with item=entry.object item_type=entry.item_type %} {# Use with tag again for easier access #}
-                    {# --- Title and Link --- #}
-                    <h5 class="card-title">
-                      <a href="{{ item.get_absolute_url }}" class="text-decoration-none">
-                        {% if item_type == 'Brand' %}{{ item.name }}{% endif %}
-                        {% if item_type == 'Equipment' %}{{ item.name }}{% endif %}
-                        {% if item_type == 'CaravanModel' %}{{ item.brand.name }} {{ item.model_name }}{% endif %}
-                        {% if item_type == 'Review' %}{% blocktrans with user=item.user.username type=item.content_type.model|title %}Review by {{ user }} for {{ type }}{% endblocktrans %}{% endif %}
-                        {% if item_type == 'Location' %}{{ item.name }}{% endif %}
-                      </a>
-                    </h5>
-                    {# --- Description/Text --- #}
-                    <p class="card-text">
-                      {% if item_type == 'Review' %}
-                        {{ item.text|truncatewords:30 }}
-                      {% elif item_type == 'Location' %}
-                        {{ item.description|truncatewords:30 }}
-                      {% elif item_type == 'CaravanModel' %}
-                         {{ item.description|truncatewords:30 }}
-                      {% else %}
-                        {# Add other descriptions if needed #}
-                      {% endif %}
-                    </p>
-                    {# --- Type Label --- #}
-                    <p class="card-text"><small class="text-muted">
-                      {% if item_type == 'Brand' %}{% trans "Brand" %}{% endif %}
-                      {% if item_type == 'Equipment' %}{% trans "Equipment" %}{% endif %}
-                      {% if item_type == 'CaravanModel' %}{% trans "Caravan" %}{% endif %}
-                      {% if item_type == 'Review' %}{% trans "Review" %}{% endif %}
-                      {% if item_type == 'Location' %}{% trans "Location" %}{% endif %}
-                      - {% trans "Added:" %} {{ item.created_at|date:"d M Y"|default:item.id }} {# Display created_at if available, else ID #}
-                    </small></p>
-                    {% endwith %} {# End with tag #}
-                  </div>
-                </div>
+        <h5>{% trans "Newest Content" %}</h5>
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">{% trans "Create New" %}</h5>
+            <div class="d-flex justify-content-around">
+              <a href="{% url 'caravans:create' %}" class="text-decoration-none text-muted d-flex align-items-center"><i class="fas fa-caravan me-1"></i> {% trans "Caravan" %}</a>
+              <a href="{% url 'equipment:create' %}" class="text-decoration-none text-muted d-flex align-items-center"><i class="fas fa-tools me-1"></i> {% trans "Equipment" %}</a>
+              <a href="{% url 'brands:create' %}" class="text-decoration-none text-muted d-flex align-items-center"><i class="fas fa-tag me-1"></i> {% trans "Brand" %}</a>
+              <a href="{% url 'locations:create' %}" class="text-decoration-none text-muted d-flex align-items-center"><i class="fas fa-map-marker-alt me-1"></i> {% trans "Location" %}</a>
+            </div>
+          </div>
+        </div>
+        {% for entry in timeline_items %}
+        <div class="home-card mb-3">
+            <div class="d-flex align-items-center mb-2 timeline-header">
+            <img src="{% if entry.object.created_by.profile.profile_picture %}{{ entry.object.created_by.profile.profile_picture.url }}{% else %}{% static 'images/placeholder.png' %}{% endif %}" class="profile-picture me-2 timeline-image" alt="Profile Picture" style="border-radius: 50%;">
+            <div class="user-info">
+              <h6 class="username mb-0">{{ entry.object.created_by.username|default:"Unknown User" }}</h6>
+            </div>
+            <div class="ms-auto action-buttons">
+              {% if entry.object.created_by %}
+              <a href="{% url 'accounts:profile' username=entry.object.created_by.username %}" class="btn btn-sm btn-outline-secondary">{% trans "View Profile" %}</a>
+              {% endif %}
+              <button class="btn btn-sm btn-outline-primary">{% trans "Follow" %}</button>
+              <button class="btn btn-sm btn-light"><i class="fas fa-cog"></i></button>
+            </div>
+          </div>
+          <div class="row g-0">
+            <div class="col-md-8">
+              <div class="card-body">
+                <h5 class="card-title">
+                  {% with item=entry.object item_type=entry.item_type %}
+                  <a href="{% if item_type == 'Brand' %}{% if item.slug %}{% url 'brands:detail' slug=item.slug %}{% else %}{{ item.get_absolute_url }}{% endif %}{% else %}{{ item.get_absolute_url }}{% endif %}" class="text-decoration-none">
+                    {% if item_type == 'Brand' %}{{ item.name }}{% endif %}
+                    {% if item_type == 'Equipment' %}{{ item.name }}{% endif %}
+                    {% if item_type == 'CaravanModel' %}{{ item.brand.name }} {{ item.model_name }}{% endif %}
+                    {% if item_type == 'Review' %}{% blocktrans with user=item.user.username type=item.content_type.model|title %}Review by {{ user }} for {{ type }}{% endblocktrans %}{% endif %}
+                    {% if item_type == 'Location' %}{{ item.name }}{% endif %}
+                  </a>
+                </h5>
+                {% endwith %}
+                <p class="card-text">{{ entry.object.description|truncatewords:20 }}</p>
+                <p class="card-text"><small class="text-muted">{% trans "Added:" %} {{ entry.object.created_at|date:"d M Y"|default:entry.object.id }} - {% if item_type == 'Brand' %}{% trans "Brand" %}{% endif %}{% if item_type == 'Equipment' %}{% trans "Equipment" %}{% endif %}{% if item_type == 'CaravanModel' %}{% trans "Caravan" %}{% endif %}{% if item_type == 'Review' %}{% trans "Review" %}{% endif %}{% if item_type == 'Location' %}{{ item.name }}{% endif %}</small></p>
               </div>
             </div>
-          {% endfor %}
-        {% else %}
-          <p>{% trans "No recommended items found." %}</p>
-        {% endif %}
+            <div class="col-md-4 d-flex align-items-center justify-content-center p-2">
+              {# --- Image/Logo --- #}
+              {% with item=entry.object item_type=entry.item_type %}
+              {% if item_type == 'Brand' and item.logo %}
+                <img src="{{ item.logo.url }}" class="img-fluid rounded-start timeline-image" alt="{{ item.name }} Logo" style="max-height: 60px; width: auto;">
+              {% elif item_type == 'Equipment' and item.image %}
+                <img src="{{ item.image.url }}" class="img-fluid rounded-start timeline-image" alt="{{ item.name }} Image" style="max-height: 60px; width: auto;">
+              {% elif item_type == 'CaravanModel' %}
+                {% with display_image=item.get_display_image %}
+                  {% if display_image and display_image.image %}
+                    <img src="{{ display_image.image.url }}" class="img-fluid rounded-start timeline-image" alt="{{ item.model_name }} Image" style="max-height: 60px; width: auto;">
+                  {% else %}
+                    <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start timeline-image" alt="{% trans 'No image available' %}" style="max-height: 60px; width: auto;">
+                  {% endif %}
+                {% endwith %}
+              {% elif item_type == 'Review' %}
+                 {# Placeholder for Review - maybe user avatar? #}
+                 <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start timeline-image" alt="{% trans 'Review' %}" style="max-height: 60px; width: auto;">
+              {% elif item_type == 'Location' %}
+                 {# Placeholder for Location - maybe map icon? #}
+                 <i class="fas fa-map-marker-alt fa-3x text-secondary"></i>
+              {% else %}
+                <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded-start timeline-image" alt="{% trans 'Placeholder' %}" style="max-height: 60px; width: auto;">
+              {% endif %}
+              {% endwith %}
+            </div>
+          </div>
+          <div class="d-flex justify-content-around mt-2">
+            <a href="#" class="text-decoration-none text-muted d-flex align-items-center"><i class="far fa-thumbs-up me-1"></i> Like</a>
+            <a href="#" class="text-decoration-none text-muted d-flex align-items-center"><i class="far fa-comment me-1"></i> Comment</a>
+            <a href="#" class="text-decoration-none text-muted d-flex align-items-center"><i class="fas fa-share-alt me-1"></i> Send</a>
+
+          </div>
+        </div>
+        {% endfor %} {# Close the for loop #}
       </div>
+
       {# Takip Edilenler Sekmesi İçeriği #}
       <div class="tab-pane fade" id="following-tab-pane" role="tabpanel" aria-labelledby="following-tab" tabindex="0">
         <h5>{% trans "Content from Followed Users" %}</h5>
-        {# TODO: Arka uçtan takip edilen içerikleri buraya yükle (Ayrı bir view/context güncellemesi gerektirir) #}
-<div class="home-card mb-3">
-          <div class="card-body">
-            <h5 class="card-title">Placeholder Following Post 1</h5>
-            <p class="card-text">This is placeholder content for the following feed. Backend logic needed.</p>
-            <small class="text-muted">Posted by User C</small>
-          </div>
-        </div>
+        <p>{% trans "No content from followed users." %}</p>
       </div>
     </div>
   </div>
@@ -131,25 +137,38 @@
         {% trans "Who to follow" %}
       </div>
       <ul class="list-group list-group-flush">
-        {# TODO: Arka uçtan takip edilecek kullanıcı önerilerini buraya yükle #}
-        <li class="list-group-item">User X (Placeholder) <button class="btn btn-sm btn-outline-secondary float-end">{% trans "Follow" %}</button></li>
-        <li class="list-group-item">User Y (Placeholder) <button class="btn btn-sm btn-outline-secondary float-end">{% trans "Follow" %}</button></li>
-        <li class="list-group-item">User Z (Placeholder) <button class="btn btn-sm btn-outline-secondary float-end">{% trans "Follow" %}</button></li>
+        {% for user in who_to_follow_users %}
+<li class="list-group-item">
+  <a href="{% url 'accounts:profile' username=user.username %}">{{ user.username }}</a>
+  <br>
+  <span>Posts: {{ user.posts_count }}</span> |
+  <span>Followers: {{ user.follower_count }}</span> |
+  <span>Following: {{ user.following_count }}</span>
+  {% if user.is_following %}
+    <span>Following</span>
+  {% else %}
+    <form method="post" action="{% url 'users:follow_user' username=user.username %}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-sm btn-outline-secondary float-end">{% trans "Follow" %}</button>
+    </form>
+  {% endif %}
+</li>
+{% empty %}
+        <li class="list-group-item">{% trans "No users to follow." %}</li>
+        {% endfor %}
       </ul>
     </div>
 
     {# Yeni İçerik #}
-<div class="home-card">
+    <div class="card mb-3">
       <div class="card-header">
         {% trans "New Content" %}
       </div>
       <div class="card-body">
-        {# TODO: Yeni içerik oluşturma formu veya düğmesi buraya eklenebilir #}
         <p>{% trans "Placeholder for creating new content." %}</p>
         <button class="btn btn-primary w-100">{% trans "Create Post" %} (Placeholder)</button>
       </div>
     </div>
   </div>
-
 </div>
 {% endblock content %}

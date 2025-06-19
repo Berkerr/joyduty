@@ -10,6 +10,35 @@ from reviews.forms import ReviewForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
+from .forms import LocationForm
+
+@login_required
+def location_create(request):
+    if request.method == 'POST':
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            location = form.save(commit=False)
+            location.suggested_by = request.user
+            location.save()
+            return redirect('locations:detail_by_pk', pk=location.pk)
+    else:
+        form = LocationForm()
+    return render(request, 'locations/location_form.html', {'form': form})
+
+from .forms import LocationForm
+
+@login_required
+def location_create(request):
+    if request.method == 'POST':
+        form = LocationForm(request.POST)
+        if form.is_valid():
+            location = form.save(commit=False)
+            location.suggested_by = request.user
+            location.save()
+            return redirect('locations:detail_by_pk', pk=location.pk)
+    else:
+        form = LocationForm()
+    return render(request, 'locations/location_form.html', {'form': form})
 
 def location_list(request, category_slug=None):
     """

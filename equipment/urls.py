@@ -14,4 +14,5 @@ urlpatterns = [
     path('category/<slug:category_slug>/brand/<slug:brand_slug>/<slug:equipment_slug>/', views.equipment_detail_by_slugs, name='detail_by_slugs'),
     # /equipment/<int:pk>/ -> Ekipman detayı (PK ile)
     path('<int:pk>/', views.equipment_detail_by_pk, name='detail_by_pk'),
+    path('new/', views.equipment_create, name='create'),
 ]

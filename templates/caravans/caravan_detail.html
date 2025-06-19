@@ -1,7 +1,8 @@
 {# templates/caravans/caravan_detail.html #}
 
 {% extends "base.html" %}
-{% load static i18n contenttypes %}
+{% load contenttypes %}
+{% load static i18n %}
 
 {% block title %}{{ caravan }} - {% trans "Caravans" %} - {{ block.super }}{% endblock title %}
 
@@ -67,7 +68,7 @@
           <strong>{% trans "Key Information" %}</strong>
         </div>
         <ul class="list-group list-group-flush">
-          <li class="list-group-item"><strong>{% trans "Brand" %}:</strong> {{ caravan.brand.name }}</li>
+          <li class="list-group-item"><strong>{% trans "Brand" %}:</strong> <a href="{% url 'brands:detail' slug=caravan.brand.slug %}">{{ caravan.brand.name }}</a></li>
           <li class="list-group-item"><strong>{% trans "Model" %}:</strong> {{ caravan.model_name }}</li>
           {% if caravan.type %}<li class="list-group-item"><strong>{% trans "Type" %}:</strong> {{ caravan.type.name }}</li>{% endif %}
           {% if caravan.year_start %}
@@ -175,7 +176,7 @@
        </form>
 
       {% else %} {# Giriş yapmamışsa mesaj göster #}
-          <p><em>{% trans "You must be" %} <a href="{% url 'login' %}?next={{ request.path }}">{% trans "logged in" %}</a> {% trans "to add a review." %}</em></p>
+          <p><em>{% trans "You must be" %} <a href="{% url 'accounts:login' %}?next={{ request.path }}">{% trans "logged in" %}</a> {% trans "to add a review." %}</em></p>
       {% endif %}
   </div> {# reviews-section kapanışı #}
 

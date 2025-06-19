@@ -11,5 +11,7 @@ urlpatterns = [
     # İleride profil sayfası vb. eklenebilir
     path('profile/<str:username>/', views.profile_view, name='profile'),
     path('inventory/', views.inventory_list_view, name='inventory_list'),
-    path('login/', LoginView.as_view(template_name='accounts/login.html', next_page='accounts:inventory_list'), name='login'),
+    path('login/', LoginView.as_view(template_name='accounts/login.html', next_page='home'), name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('follow/<str:username>/', views.follow_user, name='follow_user'),
 ]
